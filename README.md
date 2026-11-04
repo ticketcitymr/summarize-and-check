@@ -17,6 +17,9 @@ Exit code: `0` PASS, `1` REVIEW, `2` FAIL (worst result in a batch).
 
 Optional: `--engine bart` (model rewrites the summary) and `--nli` (entailment model judges meaning). These need `pip install -r requirements.txt` and a model download, and have not been run end to end.
 
+## Before and after
+[`docs/BEFORE_AFTER.md`](docs/BEFORE_AFTER.md) shows every example narrative as the original, the one-paragraph summary, the check result and the completeness score, for reviewers and auditors. Regenerate it with `python make_report.py`.
+
 ## Examples
 `examples/sar_good` (10) and `examples/sar_insufficient` (7) are the sample narratives published in the FinCEN guide (public). Do not commit real narratives to this repo.
 
