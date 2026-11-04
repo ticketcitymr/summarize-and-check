@@ -1,0 +1,1 @@
+Any further transactions sent by this sender will be kept on file. We will not be sending a report for every transaction. Thank you.

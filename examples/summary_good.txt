@@ -1,1 +1,0 @@
-The Bank Secrecy Act requires banks to keep records and file reports to help prevent money laundering. Banks must maintain an anti-money laundering program with internal controls, independent testing, a compliance officer, and employee training. Regulators expect any model used in monitoring to be validated, documented, and governed.

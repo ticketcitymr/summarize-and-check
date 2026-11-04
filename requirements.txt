@@ -1,4 +1,4 @@
-# Only needed for the PyTorch scripts (summarize_abstractive.py, check_summary_nli.py).
-# summarize.py and check_summary.py use the Python standard library only.
+# sar_summarizer.py runs on the Python standard library alone.
+# These are only needed for the optional --engine bart and --nli options.
 torch
 transformers

@@ -1,43 +1,26 @@
-# summarize-and-check
+# summarize-and-check (SAR narratives)
 
-Summarize a page of text, then check the summary against the source. CPU only, no GPU needed.
-
-| Script | What it does | Needs |
-|---|---|---|
-| `summarize.py` | **Extractive** summary: picks the most central sentences (TextRank-style). Never invents text. | Python standard library |
-| `summarize_abstractive.py` | **Abstractive** summary: a pretrained BART model writes a new summary in its own words. Long pages are chunked automatically. | `torch`, `transformers` |
-| `check_summary.py` | **Rule-based checker**: flags invented numbers/names, weakly supported sentences, negation flips, opposite-word swaps, repetition, and missing key topics. | Python standard library |
-| `check_summary_nli.py` | **Hybrid checker**: the rules above plus a PyTorch entailment (NLI) model that judges whether the source actually supports each summary sentence. | `torch`, `transformers` |
-
-## Quick start
+Summarize a SAR narrative into one paragraph, check the summary against the narrative, and score the narrative against FinCEN's *Guidance on Preparing a Complete & Sufficient SAR Narrative* (Nov 2003). One file, CPU only, Python standard library.
 
 ```bash
-# No installs needed for these two:
-python summarize.py examples/sample_page.txt -n 3
-python check_summary.py examples/sample_page.txt examples/summary_bad.txt
-
-# For the model-based scripts:
-pip install -r requirements.txt
-python summarize_abstractive.py examples/sample_page.txt > summary.txt
-python check_summary_nli.py examples/sample_page.txt summary.txt
+python sar_summarizer.py narrative.txt          # summary + check + completeness
+python sar_summarizer.py --batch examples/sar_good -v
+python sar_summarizer.py narrative.txt --summary my_summary.txt   # check a summary you already have
 ```
 
-Model weights download on first use (about 1.2 GB for the summarizer, about 740 MB for the NLI checker) and are cached afterwards.
+Exit code: `0` PASS, `1` REVIEW, `2` FAIL (worst result in a batch).
 
-Both checkers return exit code `0` = PASS, `1` = REVIEW, `2` = FAIL, so they can gate a pipeline.
+## What it does
+1. **Summary**: picks the sentences that carry the who / what / when / where / why / how, the totals and the follow-up action, and joins them into one paragraph (`--words` sets the cap).
+2. **Check**: flags invented numbers or names, weakly supported sentences, negation flips, opposite-word swaps and repetition, and reports whether the summary kept the subject, key amount, dates, activity, follow-up action and reason for suspicion.
+3. **Completeness**: scores the narrative on 8 elements from the guide (who, what, when, where, why, how, follow-up action, records location) and warns on things like "see attachment".
 
-## How the checking works
-
-- **Rules** (`check_summary.py`): every number, date, name and acronym in a summary sentence must appear in the source, otherwise the sentence is marked UNSUPPORTED. Sentences are also compared word-by-word against the best matching source passage, and negation or opposite-word differences are flagged.
-- **NLI model** (`check_summary_nli.py`): for each summary sentence the closest source passages are scored as entailed / neutral / contradicted. A faithful paraphrase passes even with little word overlap; a contradicted sentence fails. The rule-based number and name checks still apply on top.
-
-## Limits
-
-- These checks look for **red flags**, not truth. A PASS means no red flags were found, not that the summary is verified. Read important summaries against the original.
-- The entailment thresholds in `check_summary_nli.py` (0.5 to pass, below 0.2 to fail) are starting values; tune them on your own documents.
-- `summarize_abstractive.py` and `check_summary_nli.py` depend on downloaded models and were not run end to end in the environment where they were written; the surrounding logic was tested with a stand-in scorer. Please report issues.
-- Abstractive models can state things the source did not say. That is what the checkers are for.
+Optional: `--engine bart` (model rewrites the summary) and `--nli` (entailment model judges meaning). These need `pip install -r requirements.txt` and a model download, and have not been run end to end.
 
 ## Examples
+`examples/sar_good` (10) and `examples/sar_insufficient` (7) are the sample narratives published in the FinCEN guide (public). Do not commit real narratives to this repo.
 
-`examples/` holds a short sample page, a faithful summary of it, and a deliberately hallucinated one (invented year, dollar amount, agency and percentage, plus a flipped claim) to show what the checkers flag.
+## Limits
+- The checker finds red flags, not truth. A PASS means none were found; read the summary against the original.
+- Summaries are extracted sentences and can read choppy.
+- The completeness score is a checklist of the guide's recommended elements, not a regulatory determination.
