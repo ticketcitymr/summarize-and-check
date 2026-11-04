@@ -1,0 +1,4 @@
+# Only needed for the PyTorch scripts (summarize_abstractive.py, check_summary_nli.py).
+# summarize.py and check_summary.py use the Python standard library only.
+torch
+transformers
